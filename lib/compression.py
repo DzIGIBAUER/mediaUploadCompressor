@@ -9,10 +9,6 @@ import magic
 
 from lib.allowed_types import type_allowed, MimeTypeException
 
-dir = Path(__file__).parent / "ffmpeg/bin"
-FFMPEG_PATH = dir / "ffmpeg"
-FFPROBE_PATH = dir / "ffprobe"
-
 SUFFIXES = {
     "image": "png",
     "video": "mp4",
@@ -45,7 +41,7 @@ async def compress_file(file_path: Path, output_dir: Path, progress_callback: Ca
     
     file_type = mime_type.split("/")[0]
     
-    info = ffmpeg.probe(file_path, cmd=str(FFPROBE_PATH), loglevel="error")
+    info = ffmpeg.probe(file_path, loglevel="error")
     total_frames = int(info["streams"][0].get("nb_frames", 1))
     
     suffix = SUFFIXES[file_type]
@@ -61,7 +57,7 @@ async def compress_file(file_path: Path, output_dir: Path, progress_callback: Ca
             .input(str(file_path), progress="pipe:", loglevel="error")
             .output(str(output_path), **output_kwargs)
             .global_args('-nostats')
-            .run_async(cmd=str(FFMPEG_PATH), pipe_stdout=True)
+            .run_async(pipe_stdout=True)
     )
     
     assert process.stdout
